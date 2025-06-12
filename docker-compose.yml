@@ -1,13 +1,35 @@
 version: '3.8'
 
 services:
-  # Default service using simple database (most reliable)
+  # Default service using LibSQL database
   vulnerable-app:
+    build:
+      context: .
+      dockerfile: Dockerfile.alternative
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - LIBSQL_URL=file:local.db
+    volumes:
+      - ./data:/app/data
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3000"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - zap-network
+
+  # Alternative with simple in-memory database (for testing)
+  vulnerable-app-simple:
     build:
       context: .
       dockerfile: Dockerfile.simple
     ports:
-      - "3000:3000"
+      - "3001:3000"
     environment:
       - NODE_ENV=production
       - PORT=3000
@@ -22,29 +44,8 @@ services:
       start_period: 40s
     networks:
       - zap-network
-
-  # Alternative with real SQLite (for advanced users)
-  vulnerable-app-sqlite:
-    build:
-      context: .
-      dockerfile: Dockerfile.alternative
-    ports:
-      - "3001:3000"
-    environment:
-      - NODE_ENV=production
-      - PORT=3000
-    volumes:
-      - ./data:/app/data
-    healthcheck:
-      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3000"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 40s
-    networks:
-      - zap-network
     profiles:
-      - sqlite
+      - simple
 
   zap:
     image: zaproxy/zap-stable:latest

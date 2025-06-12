@@ -5,6 +5,8 @@ initializeDatabase();
 
 export async function GET(request: NextRequest) {
   try {
+    await initializeDatabase();
+    
     const { searchParams } = new URL(request.url);
     const category = searchParams.get('category');
     const minPrice = searchParams.get('minPrice');
@@ -35,7 +37,7 @@ export async function GET(request: NextRequest) {
     }
 
     console.log('Executing SQL:', query);
-    const products = db.prepare(query).all() as { id: number; name: string; description: string; price: number; category: string; inStock: boolean; created_at: string }[];
+    const products = await db.prepare(query).all() as { id: number; name: string; description: string; price: number; category: string; inStock: boolean; created_at: string }[];
     
     return NextResponse.json(products);
   } catch (error) {
@@ -47,15 +49,17 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
+    await initializeDatabase();
+    
     const body = await request.json();
     const { name, description, price, category, stock = 0 } = body;
 
     const query = `INSERT INTO products (name, description, price, category, stock) VALUES ('${name}', '${description}', ${price}, '${category}', ${stock})`;
     console.log('Executing SQL:', query);
     
-    const result = db.prepare(query).run() as { lastInsertRowid: number; changes: number };
+    const result = await db.prepare(query).run() as { lastInsertRowid: number; changes: number };
     
-    const newProduct = db.prepare(`SELECT * FROM products WHERE id = ${result.lastInsertRowid}`).get() as { id: number; name: string; description: string; price: number; category: string; stock: number; created_at: string };
+    const newProduct = await db.prepare(`SELECT * FROM products WHERE id = ${result.lastInsertRowid}`).get() as { id: number; name: string; description: string; price: number; category: string; stock: number; created_at: string };
     
     return NextResponse.json({ message: 'Product created successfully', product: newProduct }, { status: 201 });
   } catch (error) {

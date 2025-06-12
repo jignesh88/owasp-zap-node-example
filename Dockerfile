@@ -3,23 +3,17 @@ FROM node:18-alpine
 # Set working directory
 WORKDIR /app
 
-# Install system dependencies for building native modules
+# Install minimal dependencies for LibSQL
 RUN apk add --no-cache \
-    python3 \
-    make \
-    g++ \
-    sqlite \
-    sqlite-dev \
-    pkgconfig
+    curl
 
 # Copy package files first for better caching
 COPY frontend/package*.json ./frontend/
 COPY package*.json ./
 
-# Install dependencies and rebuild native modules for Alpine
+# Install dependencies (no native modules needed for LibSQL)
 WORKDIR /app/frontend
-RUN npm install --only=production && \
-    npm rebuild better-sqlite3
+RUN npm install --only=production
 
 # Copy application code
 COPY frontend/ ./

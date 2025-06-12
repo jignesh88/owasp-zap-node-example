@@ -8,10 +8,9 @@ WORKDIR /app
 COPY frontend/package*.json ./frontend/
 COPY package*.json ./
 
-# Install only the essential dependencies (skip better-sqlite3)
+# Install dependencies (LibSQL is pure JavaScript)
 WORKDIR /app/frontend
-RUN npm install --ignore-optional && \
-    npm uninstall better-sqlite3 sqlite3 || true
+RUN npm install
 
 # Copy application code
 COPY frontend/ ./

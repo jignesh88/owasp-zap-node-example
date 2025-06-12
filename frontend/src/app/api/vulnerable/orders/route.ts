@@ -5,6 +5,8 @@ initializeDatabase();
 
 export async function GET(request: NextRequest) {
   try {
+    await initializeDatabase();
+    
     const { searchParams } = new URL(request.url);
     const userId = searchParams.get('userId');
     const status = searchParams.get('status');
@@ -31,7 +33,7 @@ export async function GET(request: NextRequest) {
     }
 
     console.log('Executing SQL:', query);
-    const orders = db.prepare(query).all() as { id: number; user_id: number; product_id: number; quantity: number; total_price: number; status: string; created_at: string; username: string; product_name: string }[];
+    const orders = await db.prepare(query).all() as { id: number; user_id: number; product_id: number; quantity: number; total_price: number; status: string; created_at: string; username: string; product_name: string }[];
     
     return NextResponse.json(orders);
   } catch (error) {
@@ -43,15 +45,17 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
+    await initializeDatabase();
+    
     const body = await request.json();
     const { userId, productId, quantity, totalPrice } = body;
 
     const query = `INSERT INTO orders (user_id, product_id, quantity, total_price) VALUES (${userId}, ${productId}, ${quantity}, ${totalPrice})`;
     console.log('Executing SQL:', query);
     
-    const result = db.prepare(query).run() as { lastInsertRowid: number; changes: number };
+    const result = await db.prepare(query).run() as { lastInsertRowid: number; changes: number };
     
-    const newOrder = db.prepare(`
+    const newOrder = await db.prepare(`
       SELECT o.*, u.username, p.name as product_name 
       FROM orders o 
       JOIN users u ON o.user_id = u.id 

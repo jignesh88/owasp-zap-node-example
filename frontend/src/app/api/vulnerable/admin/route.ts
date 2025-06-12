@@ -5,6 +5,8 @@ initializeDatabase();
 
 export async function POST(request: NextRequest) {
   try {
+    await initializeDatabase();
+    
     const body = await request.json();
     const { query: sqlQuery, action } = body;
 
@@ -12,10 +14,10 @@ export async function POST(request: NextRequest) {
       console.log('Executing admin SQL:', sqlQuery);
       
       if (sqlQuery.toLowerCase().includes('select')) {
-        const result = db.prepare(sqlQuery).all() as any[];
+        const result = await db.prepare(sqlQuery).all() as any[];
         return NextResponse.json({ result, message: 'Query executed successfully' });
       } else {
-        const result = db.prepare(sqlQuery).run() as { lastInsertRowid?: number; changes: number };
+        const result = await db.prepare(sqlQuery).run() as { lastInsertRowid?: number; changes: number };
         return NextResponse.json({ result, message: 'Command executed successfully' });
       }
     }
@@ -27,7 +29,7 @@ export async function POST(request: NextRequest) {
       for (const table of tables) {
         const query = `SELECT * FROM ${table}`;
         console.log('Executing backup SQL:', query);
-        backup[table] = db.prepare(query).all() as any[];
+        backup[table] = await db.prepare(query).all() as any[];
       }
       
       return NextResponse.json({ backup, message: 'Backup completed' });

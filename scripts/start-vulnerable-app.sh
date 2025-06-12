@@ -41,25 +41,25 @@ fi
 mkdir -p ./data
 
 # Choose database type
-DB_TYPE="${1:-simple}"
+DB_TYPE="${1:-libsql}"
 
-if [ "$DB_TYPE" = "sqlite" ]; then
-    echo -e "${YELLOW}🔨 Building Docker image with SQLite...${NC}"
-    docker-compose --profile sqlite build vulnerable-app-sqlite
-    
-    echo -e "${YELLOW}🚀 Starting vulnerable application with SQLite...${NC}"
-    docker-compose --profile sqlite up -d vulnerable-app-sqlite
-    
-    echo -e "${GREEN}✅ Application with SQLite started on port 3001!${NC}"
-    TARGET_PORT="3001"
-else
+if [ "$DB_TYPE" = "simple" ]; then
     echo -e "${YELLOW}🔨 Building Docker image with simple database...${NC}"
-    docker-compose build vulnerable-app
+    docker-compose --profile simple build vulnerable-app-simple
     
     echo -e "${YELLOW}🚀 Starting vulnerable application with simple database...${NC}"
+    docker-compose --profile simple up -d vulnerable-app-simple
+    
+    echo -e "${GREEN}✅ Application with simple database started on port 3001!${NC}"
+    TARGET_PORT="3001"
+else
+    echo -e "${YELLOW}🔨 Building Docker image with LibSQL database...${NC}"
+    docker-compose build vulnerable-app
+    
+    echo -e "${YELLOW}🚀 Starting vulnerable application with LibSQL database...${NC}"
     docker-compose up -d vulnerable-app
     
-    echo -e "${GREEN}✅ Application with simple database started on port 3000!${NC}"
+    echo -e "${GREEN}✅ Application with LibSQL database started on port 3000!${NC}"
     TARGET_PORT="3000"
 fi
 
@@ -85,8 +85,8 @@ done
 if [ $ATTEMPT -gt $MAX_ATTEMPTS ]; then
     echo -e "${RED}❌ Application failed to start within expected time.${NC}"
     echo "Checking logs..."
-    if [ "$DB_TYPE" = "sqlite" ]; then
-        docker-compose --profile sqlite logs vulnerable-app-sqlite
+    if [ "$DB_TYPE" = "simple" ]; then
+        docker-compose --profile simple logs vulnerable-app-simple
     else
         docker-compose logs vulnerable-app
     fi
@@ -117,25 +117,25 @@ echo "  Baseline Scan: ./scripts/zap-baseline-scan.sh http://localhost:${TARGET_
 echo "  Full Scan:     ./scripts/zap-full-scan.sh http://localhost:${TARGET_PORT}"
 echo ""
 echo -e "${BLUE}🔧 Database Info:${NC}"
-if [ "$DB_TYPE" = "sqlite" ]; then
-    echo "  Database: Real SQLite database"
-    echo "  Features: Persistent storage, full SQL support"
-else
+if [ "$DB_TYPE" = "simple" ]; then
     echo "  Database: Simple in-memory database"
     echo "  Features: Zero dependencies, auto SQL injection detection"
+else
+    echo "  Database: LibSQL database (Turso-compatible)"
+    echo "  Features: Modern SQLite, edge-optimized, no native dependencies"
 fi
 echo ""
 echo -e "${BLUE}🛑 Stop Application:${NC}"
-if [ "$DB_TYPE" = "sqlite" ]; then
-    echo "  docker-compose --profile sqlite down"
+if [ "$DB_TYPE" = "simple" ]; then
+    echo "  docker-compose --profile simple down"
 else
     echo "  docker-compose down"
 fi
 echo ""
 echo -e "${BLUE}💡 Alternative Database:${NC}"
-if [ "$DB_TYPE" = "sqlite" ]; then
-    echo "  For simple database: ./scripts/start-vulnerable-app.sh simple"
+if [ "$DB_TYPE" = "simple" ]; then
+    echo "  For LibSQL database: ./scripts/start-vulnerable-app.sh"
 else
-    echo "  For SQLite database: ./scripts/start-vulnerable-app.sh sqlite"
+    echo "  For simple database: ./scripts/start-vulnerable-app.sh simple"
 fi
 echo ""

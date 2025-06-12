@@ -12,6 +12,7 @@ This project demonstrates how to integrate OWASP ZAP security testing into a mod
 ### Backend
 - **Framework**: NestJS with TypeScript
 - **API**: RESTful endpoints
+- **Database**: LibSQL (Turso-compatible SQLite)
 - **Deployment**: Vercel Functions
 
 ### Security Testing
@@ -138,8 +139,11 @@ This project includes a **deliberately vulnerable** Next.js application for test
 
 #### 1. Start the Vulnerable Application
 ```bash
-# Start with Docker
+# Start with LibSQL database (default, recommended)
 ./scripts/start-vulnerable-app.sh
+
+# Start with simple in-memory database
+./scripts/start-vulnerable-app.sh simple
 
 # Or manually
 docker-compose up -d vulnerable-app

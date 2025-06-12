@@ -1,13 +1,9 @@
 # Alternative Dockerfile using regular Node.js image (not Alpine)
 FROM node:18-slim
 
-# Install system dependencies
+# Install system dependencies (minimal for LibSQL)
 RUN apt-get update && apt-get install -y \
-    python3 \
-    make \
-    g++ \
-    sqlite3 \
-    libsqlite3-dev \
+    curl \
     && rm -rf /var/lib/apt/lists/*
 
 # Set working directory

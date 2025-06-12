@@ -5,6 +5,8 @@ initializeDatabase();
 
 export async function POST(request: NextRequest) {
   try {
+    await initializeDatabase();
+    
     const body = await request.json();
     const { username, password } = body;
 
@@ -15,7 +17,7 @@ export async function POST(request: NextRequest) {
     const query = `SELECT id, username, email, role FROM users WHERE username = '${username}' AND password = '${password}'`;
     console.log('Executing SQL:', query);
     
-    const user = db.prepare(query).get() as { id: number; username: string; email: string; role: string } | undefined;
+    const user = await db.prepare(query).get() as { id: number; username: string; email: string; role: string } | undefined;
     
     if (user) {
       return NextResponse.json({ 
