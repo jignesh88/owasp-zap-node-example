@@ -1,5 +1,6 @@
 {
   "version": 2,
+  
   "builds": [
     {
       "src": "frontend/package.json",
@@ -27,6 +28,8 @@
     }
   ],
   "env": {
-    "NODE_ENV": "production"
+    "NODE_ENV": "production",
+    "NODE_VERSION": "20"
+    
   }
 }
