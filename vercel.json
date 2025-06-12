@@ -22,10 +22,5 @@
   ],
   "env": {
     "NODE_ENV": "production"
-  },
-  "functions": {
-    "backend/src/main.js": {
-      "includeFiles": "backend/dist/**"
-    }
   }
 }
