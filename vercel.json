@@ -4,17 +4,11 @@
   "builds": [
     {
       "src": "frontend/package.json",
-      "use": "@vercel/next",
-      "config": {
-        "buildCommand": "apt-get update && apt-get install -y python3-distutils && npm install"
-      }
+      "use": "@vercel/next"
     },
     {
       "src": "backend/package.json",
-      "use": "@vercel/node",
-      "config": {
-        "buildCommand": "apt-get update && apt-get install -y python3-distutils && npm install"
-      }
+      "use": "@vercel/node"
     }
   ],
   "routes": [
