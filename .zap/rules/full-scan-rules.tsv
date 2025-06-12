@@ -1,0 +1,65 @@
+# ZAP Full Scan Rules
+# This file contains rules for full security scanning (active + passive scans)
+# Format: RULE_ID	THRESHOLD	[IGNORE_PATTERN]
+
+# SQL Injection
+40018	HIGH	# SQL Injection
+40019	HIGH	# SQL Injection - MySQL
+40020	HIGH	# SQL Injection - Hypersonic SQL
+40021	HIGH	# SQL Injection - Oracle
+40022	HIGH	# SQL Injection - PostgreSQL
+
+# Cross-Site Scripting (XSS)
+40012	HIGH	# Cross Site Scripting (Reflected)
+40014	HIGH	# Cross Site Scripting (Persistent)
+40016	HIGH	# Cross Site Scripting (Persistent) - Prime
+40017	HIGH	# Cross Site Scripting (Persistent) - Spider
+
+# Path Traversal
+6	HIGH	# Path Traversal
+7	HIGH	# Remote File Inclusion
+
+# Command Injection
+90020	HIGH	# Remote OS Command Injection
+
+# Authentication Issues
+10055	MEDIUM	# CSP Scanner
+2	HIGH	# Private IP Disclosure
+3	MEDIUM	# Session ID in URL Rewrite
+
+# Information Disclosure
+10016	LOW	# Web Browser XSS Protection Not Enabled
+10017	LOW	# Cross-Domain JavaScript Source File Inclusion
+10019	MEDIUM	# Content-Type Header Missing
+10021	LOW	# X-Content-Type-Options Header Missing
+10023	MEDIUM	# Information Disclosure - Debug Error Messages
+10024	MEDIUM	# Information Disclosure - Sensitive Information in URL
+10025	MEDIUM	# Information Disclosure - Sensitive Information in HTTP Referrer Header
+10027	MEDIUM	# Information Disclosure - Suspicious Comments
+10033	MEDIUM	# Directory Browsing
+10036	MEDIUM	# Server Leaks Version Information
+10037	MEDIUM	# Server Leaks Information via X-Powered-By
+10038	MEDIUM	# Content Security Policy (CSP) Header Not Set
+10035	HIGH	# Strict-Transport-Security Header Not Set
+
+# CSRF and Session Management
+10202	HIGH	# Absence of Anti-CSRF Tokens
+90019	MEDIUM	# Server Side Code Injection
+
+# Injection Attacks
+40008	HIGH	# Parameter Tampering
+40009	HIGH	# Server Side Code Injection
+40013	HIGH	# Session Fixation
+40014	HIGH	# Cross Site Scripting
+40018	HIGH	# SQL Injection
+
+# Buffer Overflow
+30001	HIGH	# Buffer Overflow
+
+# External Service Interaction
+00014	MEDIUM	# HTTP Parameter Pollution
+
+# Enable all active scan rules for comprehensive testing
+0	MEDIUM	# Directory Browsing
+40003	HIGH	# CRLF Injection
+40006	MEDIUM	# Cross Site Scripting (DOM Based)

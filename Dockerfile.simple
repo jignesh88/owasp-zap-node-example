@@ -1,0 +1,34 @@
+# Simple Dockerfile without native dependencies
+FROM node:18-slim
+
+# Set working directory
+WORKDIR /app
+
+# Copy package files
+COPY frontend/package*.json ./frontend/
+COPY package*.json ./
+
+# Install only the essential dependencies (skip better-sqlite3)
+WORKDIR /app/frontend
+RUN npm install --ignore-optional && \
+    npm uninstall better-sqlite3 sqlite3 || true
+
+# Copy application code
+COPY frontend/ ./
+
+# Build the application
+RUN npm run build
+
+# Expose port
+EXPOSE 3000
+
+# Set environment variables
+ENV NODE_ENV=production
+ENV PORT=3000
+ENV USE_SIMPLE_DB=true
+
+# Create directory for data
+RUN mkdir -p /app/data
+
+# Start the application
+CMD ["npm", "start"]

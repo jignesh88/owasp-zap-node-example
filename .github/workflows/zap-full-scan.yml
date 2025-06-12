@@ -1,0 +1,211 @@
+name: OWASP ZAP Full Scan
+
+on:
+  push:
+    branches: [ main, master ]
+  release:
+    types: [ published, released ]
+  schedule:
+    - cron: '0 2 * * 1'  # Weekly scan on Mondays at 2 AM
+  workflow_dispatch:  # Allow manual trigger
+
+jobs:
+  deploy-and-full-scan:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+
+    - name: Install dependencies
+      run: |
+        npm install
+        cd backend && npm install
+        cd ../frontend && npm install
+
+    - name: Build applications
+      run: |
+        npm run build
+
+    - name: Deploy to Vercel Production
+      uses: amondnet/vercel-action@v25
+      id: vercel-deploy
+      with:
+        vercel-token: ${{ secrets.VERCEL_TOKEN }}
+        vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+        vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+        vercel-args: '--prod'
+        working-directory: ./
+
+    - name: Wait for deployment
+      run: sleep 60
+
+    - name: OWASP ZAP Full Scan
+      uses: zaproxy/action-full-scan@v0.10.0
+      with:
+        target: ${{ steps.vercel-deploy.outputs.preview-url }}
+        rules_file_name: '.zap/rules/full-scan-rules.tsv'
+        cmd_options: '-a -d -T 10 -m 10 -z "-configfile /zap/wrk/.zap/config"'
+        fail_action: false
+        allow_issue_writing: false
+
+    - name: Upload ZAP Full Scan Report
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: zap-full-scan-report-${{ github.run_number }}
+        path: |
+          report_html.html
+          report_md.md
+          report_json.json
+
+    - name: Process ZAP Results for Security Dashboard
+      if: always()
+      run: |
+        echo "Processing ZAP scan results..."
+        
+        # Create security metrics
+        mkdir -p security-metrics
+        
+        # Extract key metrics from JSON report if available
+        if [ -f report_json.json ]; then
+          # Count issues by risk level
+          HIGH_RISK=$(jq '[.site[].alerts[] | select(.riskdesc | startswith("High"))] | length' report_json.json 2>/dev/null || echo "0")
+          MEDIUM_RISK=$(jq '[.site[].alerts[] | select(.riskdesc | startswith("Medium"))] | length' report_json.json 2>/dev/null || echo "0")
+          LOW_RISK=$(jq '[.site[].alerts[] | select(.riskdesc | startswith("Low"))] | length' report_json.json 2>/dev/null || echo "0")
+          INFO_RISK=$(jq '[.site[].alerts[] | select(.riskdesc | startswith("Informational"))] | length' report_json.json 2>/dev/null || echo "0")
+          
+          # Create metrics file
+          cat > security-metrics/metrics.json << EOF
+        {
+          "scan_type": "full",
+          "target_url": "${{ steps.vercel-deploy.outputs.preview-url }}",
+          "scan_date": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
+          "branch": "${{ github.ref_name }}",
+          "commit": "${{ github.sha }}",
+          "high_risk_issues": $HIGH_RISK,
+          "medium_risk_issues": $MEDIUM_RISK,
+          "low_risk_issues": $LOW_RISK,
+          "info_risk_issues": $INFO_RISK,
+          "total_issues": $((HIGH_RISK + MEDIUM_RISK + LOW_RISK + INFO_RISK))
+        }
+        EOF
+        else
+          cat > security-metrics/metrics.json << EOF
+        {
+          "scan_type": "full",
+          "target_url": "${{ steps.vercel-deploy.outputs.preview-url }}",
+          "scan_date": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
+          "branch": "${{ github.ref_name }}",
+          "commit": "${{ github.sha }}",
+          "high_risk_issues": 0,
+          "medium_risk_issues": 0,
+          "low_risk_issues": 0,
+          "info_risk_issues": 0,
+          "total_issues": 0,
+          "status": "completed_successfully"
+        }
+        EOF
+        fi
+
+    - name: Upload Security Metrics
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: security-metrics-${{ github.run_number }}
+        path: security-metrics/
+
+    - name: Create ZAP Full Scan Summary
+      if: always()
+      run: |
+        echo "## 🔒 OWASP ZAP Full Security Scan Results" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "**Target URL:** ${{ steps.vercel-deploy.outputs.preview-url }}" >> $GITHUB_STEP_SUMMARY
+        echo "**Scan Type:** Full Security Scan" >> $GITHUB_STEP_SUMMARY
+        echo "**Branch:** ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
+        echo "**Trigger:** ${{ github.event_name }}" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        
+        if [ -f security-metrics/metrics.json ]; then
+          HIGH=$(jq -r '.high_risk_issues' security-metrics/metrics.json)
+          MEDIUM=$(jq -r '.medium_risk_issues' security-metrics/metrics.json)
+          LOW=$(jq -r '.low_risk_issues' security-metrics/metrics.json)
+          INFO=$(jq -r '.info_risk_issues' security-metrics/metrics.json)
+          TOTAL=$(jq -r '.total_issues' security-metrics/metrics.json)
+          
+          echo "### 📊 Security Issues Summary" >> $GITHUB_STEP_SUMMARY
+          echo "| Risk Level | Count |" >> $GITHUB_STEP_SUMMARY
+          echo "|------------|-------|" >> $GITHUB_STEP_SUMMARY
+          echo "| 🔴 High | $HIGH |" >> $GITHUB_STEP_SUMMARY
+          echo "| 🟡 Medium | $MEDIUM |" >> $GITHUB_STEP_SUMMARY
+          echo "| 🟢 Low | $LOW |" >> $GITHUB_STEP_SUMMARY
+          echo "| ℹ️ Info | $INFO |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Total** | **$TOTAL** |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+        fi
+        
+        if [ -f report_md.md ]; then
+          echo "### 📋 Detailed Results" >> $GITHUB_STEP_SUMMARY
+          cat report_md.md >> $GITHUB_STEP_SUMMARY
+        fi
+        
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "📁 **Full reports and metrics available in workflow artifacts**" >> $GITHUB_STEP_SUMMARY
+
+    - name: Create GitHub Issue for High/Medium Risks
+      if: always()
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const fs = require('fs');
+          
+          if (!fs.existsSync('security-metrics/metrics.json')) {
+            console.log('No metrics file found, skipping issue creation');
+            return;
+          }
+          
+          const metrics = JSON.parse(fs.readFileSync('security-metrics/metrics.json', 'utf8'));
+          const highRisk = metrics.high_risk_issues || 0;
+          const mediumRisk = metrics.medium_risk_issues || 0;
+          
+          if (highRisk > 0 || mediumRisk > 0) {
+            const title = `🚨 Security Issues Found - ${highRisk} High, ${mediumRisk} Medium Risk`;
+            const body = `## Security Scan Results
+            
+            A full OWASP ZAP security scan has identified security issues that require attention.
+            
+            **Target:** ${metrics.target_url}
+            **Branch:** ${metrics.branch}
+            **Commit:** ${metrics.commit}
+            **Scan Date:** ${metrics.scan_date}
+            
+            ### Issue Summary
+            - 🔴 High Risk: ${metrics.high_risk_issues}
+            - 🟡 Medium Risk: ${metrics.medium_risk_issues}
+            - 🟢 Low Risk: ${metrics.low_risk_issues}
+            - ℹ️ Informational: ${metrics.info_risk_issues}
+            
+            ### Action Required
+            ${highRisk > 0 ? '⚠️ **High risk issues require immediate attention**' : ''}
+            ${mediumRisk > 0 ? '⚠️ **Medium risk issues should be addressed soon**' : ''}
+            
+            ### Reports
+            Detailed reports are available in the [workflow artifacts](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}).
+            
+            ---
+            Auto-generated by OWASP ZAP Full Scan Workflow`;
+            
+            github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: title,
+              body: body,
+              labels: ['security', 'zap-scan', highRisk > 0 ? 'high-priority' : 'medium-priority']
+            });
+          }

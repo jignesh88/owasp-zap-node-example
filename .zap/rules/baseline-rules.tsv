@@ -1,0 +1,41 @@
+# ZAP Baseline Scan Rules
+# This file contains rules for baseline scanning (passive scans only)
+# Format: RULE_ID	THRESHOLD	[IGNORE_PATTERN]
+
+# Ignore common false positives for development
+10098	OFF	# Cross-Domain Misconfiguration
+10020	OFF	# X-Frame-Options Header Not Set (development only)
+10021	OFF	# X-Content-Type-Options Header Missing (development only)
+
+# Enable important security checks
+10016	LOW	# Web Browser XSS Protection Not Enabled
+10017	LOW	# Cross-Domain JavaScript Source File Inclusion
+10019	MEDIUM	# Content-Type Header Missing
+10023	MEDIUM	# Information Disclosure - Debug Error Messages
+10024	MEDIUM	# Information Disclosure - Sensitive Information in URL
+10025	MEDIUM	# Information Disclosure - Sensitive Information in HTTP Referrer Header
+10026	MEDIUM	# HTTP Parameter Override
+10027	MEDIUM	# Information Disclosure - Suspicious Comments
+10028	MEDIUM	# Open Redirect
+10029	MEDIUM	# Cookie Poisoning
+10030	MEDIUM	# User Controllable Charset
+10031	MEDIUM	# User Controllable HTML Element Attribute (Potential XSS)
+10032	MEDIUM	# Viewstate Scanner
+10033	MEDIUM	# Directory Browsing
+10034	MEDIUM	# Heartbleed OpenSSL Vulnerability (Indicative)
+10035	HIGH	# Strict-Transport-Security Header Not Set
+10036	MEDIUM	# Server Leaks Version Information via "Server" HTTP Response Header Field
+10037	MEDIUM	# Server Leaks Information via "X-Powered-By" HTTP Response Header Field(s)
+10038	MEDIUM	# Content Security Policy (CSP) Header Not Set
+10040	MEDIUM	# Secure Pages Include Mixed Content
+10041	MEDIUM	# HTTP to HTTPS Insecure Transition in Form Post
+10042	MEDIUM	# HTTPS to HTTP Insecure Transition in Form Post
+10043	MEDIUM	# User Controllable JavaScript Event (XSS)
+10044	MEDIUM	# Big Redirect Detected (Potential Sensitive Information Leak)
+10045	LOW	# Source Code Disclosure - /WEB-INF folder
+10046	MEDIUM	# Insecure JSF ViewState
+10047	MEDIUM	# HTTPS Content Available via HTTP
+10048	MEDIUM	# ShellShock - CVE-2014-6271
+10049	MEDIUM	# Content Cacheability
+10050	MEDIUM	# Retrieved from Cache
+10051	MEDIUM	# Relative Path Confusion

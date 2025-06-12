@@ -1,0 +1,70 @@
+version: '3.8'
+
+services:
+  # Default service using simple database (most reliable)
+  vulnerable-app:
+    build:
+      context: .
+      dockerfile: Dockerfile.simple
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - USE_SIMPLE_DB=true
+    volumes:
+      - ./data:/app/data
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3000"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - zap-network
+
+  # Alternative with real SQLite (for advanced users)
+  vulnerable-app-sqlite:
+    build:
+      context: .
+      dockerfile: Dockerfile.alternative
+    ports:
+      - "3001:3000"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+    volumes:
+      - ./data:/app/data
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3000"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - zap-network
+    profiles:
+      - sqlite
+
+  zap:
+    image: zaproxy/zap-stable:latest
+    user: zap
+    ports:
+      - "8080:8080"
+      - "8090:8090"
+    volumes:
+      - ./zap-reports:/zap/wrk
+      - ./.zap:/zap/config
+    command: zap.sh -daemon -host 0.0.0.0 -port 8080 -config api.addrs.addr.name=.* -config api.addrs.addr.regex=true
+    networks:
+      - zap-network
+    depends_on:
+      vulnerable-app:
+        condition: service_healthy
+
+networks:
+  zap-network:
+    driver: bridge
+
+volumes:
+  zap-reports:

@@ -1,0 +1,41 @@
+# ZAP Configuration File
+# This file contains configuration settings for OWASP ZAP scans
+
+# Spider Configuration
+spider.maxDepth=5
+spider.maxChildren=10
+spider.maxDuration=10
+spider.maxParseSizeBytes=2621440
+spider.requestWaitTime=200
+spider.threadCount=2
+
+# Active Scan Configuration
+ascan.threadCount=10
+ascan.maxRuleDurationInMins=5
+ascan.maxScanDurationInMins=30
+ascan.delayInMs=0
+ascan.addQueryParam=false
+
+# Session Management
+session.defaultSessionToken=JSESSIONID;ASP.NET_SessionId;PHPSESSID
+
+# Authentication
+auth.loginUrl=
+auth.loginRequestData=
+auth.excludeFromScan=.*logout.*,.*signout.*
+
+# Custom Headers
+replacer.full_list=
+replacer.description=Add custom headers for API authentication
+
+# Reporting
+report.maxReportItems=1000
+report.includePassingTests=false
+
+# Network Configuration
+network.timeoutInSecs=60
+network.socketTimeoutInSecs=60
+network.connection.defaultUserAgent=OWASP ZAP Baseline Scan
+
+# Logging
+log.level=INFO
