@@ -125,16 +125,14 @@ docker run --rm \
     zaproxy/zap-stable:latest \
     zap-full-scan.py \
     -t "${TARGET_URL}" \
-    -g full-scan-rules.conf \
+    -m ${MAX_DURATION} \
     -r "${SCAN_NAME}_report.html" \
     -J "${SCAN_NAME}_report.json" \
-    -m "${SCAN_NAME}_report.md" \
+    -M "${SCAN_NAME}_report.md" \
     -x "${SCAN_NAME}_report.xml" \
     -a \
     -d \
-    -T ${MAX_DURATION} \
-    -z "-configfile /zap/config/config" \
-    --hook=/zap/wrk/context.context
+    -z "-configfile /zap/config/config"
 
 # Check scan results
 SCAN_EXIT_CODE=$?

@@ -54,14 +54,10 @@ docker run --rm \
     zaproxy/zap-stable:latest \
     zap-baseline.py \
     -t "${TARGET_URL}" \
-    -g baseline-rules.conf \
     -r "${SCAN_NAME}_report.html" \
     -J "${SCAN_NAME}_report.json" \
-    -m "${SCAN_NAME}_report.md" \
     -a \
-    -d \
-    -T 5 \
-    -z "-configfile /zap/config/config"
+    -d
 
 # Check scan results
 SCAN_EXIT_CODE=$?
