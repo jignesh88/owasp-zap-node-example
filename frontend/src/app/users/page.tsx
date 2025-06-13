@@ -21,9 +21,9 @@ export default function Users() {
 
   const fetchUsers = async () => {
     try {
+      const { apiClient } = await import('@/lib/api-client')
       const url = search ? `/api/users?search=${search}` : '/api/users'
-      const response = await fetch(url)
-      const data = await response.json()
+      const data = await apiClient.get(url)
       setUsers(data)
     } catch (error) {
       console.error('Failed to fetch users:', error)

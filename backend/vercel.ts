@@ -20,9 +20,13 @@ async function bootstrapServer() {
         }
       );
       
-      // Enable CORS for Vercel deployment
+      // Enable CORS for separated frontend deployment
       nestApp.enableCors({
-        origin: true,
+        origin: [
+          'https://owasp-zap-frontend.vercel.app',
+          'http://localhost:3000', // For local development
+          /\.vercel\.app$/, // Allow any Vercel preview deployments
+        ],
         credentials: true,
         methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
         allowedHeaders: ['Content-Type', 'Authorization'],

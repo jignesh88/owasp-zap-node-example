@@ -6,10 +6,11 @@ export default function Home() {
   const [backendStatus, setBackendStatus] = useState<string>('Loading...')
 
   useEffect(() => {
-    fetch('/api/health')
-      .then(res => res.json())
-      .then(data => setBackendStatus(`Connected - ${data.service}`))
-      .catch(() => setBackendStatus('Backend connection failed'))
+    import('@/lib/api-client').then(({ apiClient }) => {
+      apiClient.get('/api/health')
+        .then(data => setBackendStatus(`Connected - ${data.service || 'Backend API'}`))
+        .catch(() => setBackendStatus('Backend connection failed'))
+    })
   }, [])
 
   return (

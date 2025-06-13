@@ -71,24 +71,32 @@ npm run build
 
 ### GitHub Actions Workflows
 
-#### Baseline Scan Workflow (`.github/workflows/zap-baseline-scan.yml`)
-- Deploys to Vercel preview environment
-- Runs OWASP ZAP baseline scan
+#### Frontend Baseline Scan (`.github/workflows/zap-baseline-scan.yml`)
+- Deploys frontend to Vercel preview environment
+- Runs OWASP ZAP baseline scan on UI
 - Comments results on PRs
 - Uploads scan artifacts
 
-#### Full Scan Workflow (`.github/workflows/zap-full-scan.yml`)
-- Deploys to Vercel production environment
-- Runs comprehensive OWASP ZAP scan
+#### Frontend Full Scan (`.github/workflows/zap-full-scan.yml`)
+- Deploys frontend to Vercel production environment
+- Runs comprehensive OWASP ZAP scan on UI
 - Creates GitHub issues for high/medium risks
 - Generates security metrics
 - Uploads detailed reports
 
+#### Backend API Baseline Scan (`.github/workflows/zap-backend-baseline-scan.yml`)
+- Deploys backend to Vercel preview environment
+- Runs OWASP ZAP API baseline scan on endpoints
+- Tests SQL injection vulnerabilities
+- Comments API security results on PRs
+- Validates endpoint availability and security
+
 ### Security Configuration
 
 #### ZAP Rules
-- **Baseline Rules** (`.zap/rules/baseline-rules.tsv`): Conservative ruleset for CI
-- **Full Scan Rules** (`.zap/rules/full-scan-rules.tsv`): Comprehensive security tests
+- **Frontend Baseline Rules** (`.zap/rules/baseline-rules.tsv`): Conservative ruleset for UI scanning
+- **Frontend Full Scan Rules** (`.zap/rules/full-scan-rules.tsv`): Comprehensive UI security tests
+- **API Baseline Rules** (`.zap/rules/api-baseline-rules.tsv`): API-focused security tests
 
 #### ZAP Configuration (`.zap/config`)
 - Spider and scan settings
@@ -161,14 +169,14 @@ curl "http://localhost:3000/api/vulnerable/users?search=admin' UNION SELECT 1,2,
 
 #### 3. Run OWASP ZAP Scans
 ```bash
-# Quick baseline scan (2-5 minutes)
-./scripts/zap-baseline-scan.sh
+# Frontend UI scans
+./scripts/zap-baseline-scan.sh                          # Quick baseline scan (2-5 minutes)
+./scripts/zap-full-scan.sh                              # Comprehensive full scan (15-45 minutes)
+./scripts/zap-full-scan.sh http://localhost:3000 60     # Custom target URL (60 minute max)
 
-# Comprehensive full scan (15-45 minutes)
-./scripts/zap-full-scan.sh
-
-# Custom target URL
-./scripts/zap-full-scan.sh http://localhost:3000 60  # 60 minute max
+# Backend API scans
+./scripts/zap-api-scan.sh                               # API baseline scan (3-7 minutes)
+./scripts/zap-api-scan.sh http://localhost:3001/api     # Custom API target
 ```
 
 #### 4. View Results
@@ -294,8 +302,9 @@ The workflows generate comprehensive security metrics including:
 - `./scripts/test-sql-injection.sh` - Manual SQL injection vulnerability tests
 
 ### Security Scanning
-- `./scripts/zap-baseline-scan.sh [URL]` - Quick passive security scan
-- `./scripts/zap-full-scan.sh [URL] [MAX_MINUTES]` - Comprehensive active scan
+- `./scripts/zap-baseline-scan.sh [URL]` - Quick passive frontend security scan
+- `./scripts/zap-full-scan.sh [URL] [MAX_MINUTES]` - Comprehensive active frontend scan
+- `./scripts/zap-api-scan.sh [API_URL] [REPORT_DIR]` - Backend API baseline security scan
 
 ### Docker Commands
 - `docker-compose up -d vulnerable-app` - Start vulnerable application

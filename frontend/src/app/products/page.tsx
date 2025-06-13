@@ -24,14 +24,14 @@ export default function Products() {
 
   const fetchProducts = async () => {
     try {
+      const { apiClient } = await import('@/lib/api-client')
       let url = '/api/products'
       const params = new URLSearchParams()
       if (category) params.append('category', category)
       if (minPrice) params.append('minPrice', minPrice)
       if (params.toString()) url += `?${params.toString()}`
       
-      const response = await fetch(url)
-      const data = await response.json()
+      const data = await apiClient.get(url)
       setProducts(data)
     } catch (error) {
       console.error('Failed to fetch products:', error)

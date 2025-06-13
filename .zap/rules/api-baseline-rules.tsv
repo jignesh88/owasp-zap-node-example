@@ -1,0 +1,85 @@
+# ZAP API Baseline Scan Rules
+# Format: <rule_id>	<threshold>	<action>	<description>
+
+# SQL Injection rules - These should be detected as we have vulnerable endpoints
+40018	MEDIUM	WARN	SQL Injection
+40019	MEDIUM	WARN	SQL Injection - MySQL
+40020	MEDIUM	WARN	SQL Injection - Hypersonic SQL
+40021	MEDIUM	WARN	SQL Injection - Oracle
+40022	MEDIUM	WARN	SQL Injection - PostgreSQL
+
+# Cross-Site Scripting rules
+40012	MEDIUM	WARN	Cross Site Scripting (Reflected)
+40014	MEDIUM	WARN	Cross Site Scripting (Persistent)
+40016	MEDIUM	WARN	Cross Site Scripting (Persistent) - Prime
+40017	MEDIUM	WARN	Cross Site Scripting (Persistent) - Spider
+
+# Path Traversal
+6	MEDIUM	WARN	Path Traversal
+
+# Command Injection
+90020	HIGH	WARN	Remote OS Command Injection
+
+# XXE
+90019	MEDIUM	WARN	XML External Entity Attack
+
+# LDAP Injection
+40015	MEDIUM	WARN	LDAP Injection
+
+# Header Injection
+40008	MEDIUM	WARN	Parameter Tampering
+
+# Information Disclosure rules - IGNORE for demo purposes
+10040	OFF	IGNORE	Secure Pages Include Mixed Content
+10041	OFF	IGNORE	HTTP to HTTPS Insecure Transition in Form Post
+10042	OFF	IGNORE	HTTPS to HTTP Insecure Transition in Form Post
+10043	OFF	IGNORE	User Controllable Charset
+10045	OFF	IGNORE	Source Code Disclosure - /WEB-INF folder
+10094	OFF	IGNORE	Base64 Disclosure
+10095	OFF	IGNORE	Backup File Disclosure
+
+# Server configuration issues - IGNORE for Vercel serverless
+10020	OFF	IGNORE	X-Frame-Options Header Not Set
+10021	OFF	IGNORE	X-Content-Type-Options Header Missing
+10023	OFF	IGNORE	Information Disclosure - Debug Error Messages
+10024	OFF	IGNORE	Information Disclosure - Sensitive Information in URL
+10025	OFF	IGNORE	Information Disclosure - Sensitive Information in HTTP Referrer Header
+10026	OFF	IGNORE	HTTP Parameter Override
+10027	OFF	IGNORE	Information Disclosure - Suspicious Comments
+10028	OFF	IGNORE	Open Redirect
+10029	OFF	IGNORE	Cookie Poisoning
+10030	OFF	IGNORE	User Controllable Charset
+10031	OFF	IGNORE	User Controllable HTML Element Attribute (Potential XSS)
+10032	OFF	IGNORE	Viewstate Scanner
+10033	OFF	IGNORE	Directory Browsing
+10034	OFF	IGNORE	Heartbleed OpenSSL Vulnerability
+10035	OFF	IGNORE	Strict-Transport-Security Header Not Set
+10036	OFF	IGNORE	HTTP Server Response Header
+10037	OFF	IGNORE	Server Leaks Information via "X-Powered-By" HTTP Response Header Field(s)
+10038	OFF	IGNORE	Content Security Policy (CSP) Header Not Set
+
+# Cookie security - IGNORE for API endpoints
+10011	OFF	IGNORE	Cookie Without Secure Flag
+10012	OFF	IGNORE	Password Autocomplete in Browser
+10013	OFF	IGNORE	Weak Authentication Method
+10015	OFF	IGNORE	Incomplete or No Cache-control and Pragma HTTP Header Set
+10016	OFF	IGNORE	Web Browser XSS Protection Not Enabled
+10017	OFF	IGNORE	Cross-Domain JavaScript Source File Inclusion
+10019	OFF	IGNORE	Content-Type Header Missing
+
+# Authentication bypass - Keep enabled for API testing
+10101	MEDIUM	WARN	Insecure Authentication Method
+10102	MEDIUM	WARN	Session Fixation
+
+# Buffer overflow
+30001	HIGH	WARN	Buffer Overflow
+30002	MEDIUM	WARN	Format String Error
+
+# Denial of Service
+10048	MEDIUM	WARN	Remote File Inclusion
+10049	MEDIUM	WARN	ShellShock CVE-2014-6271
+
+# API specific rules
+100000	MEDIUM	WARN	Unauthenticated API Access
+100001	MEDIUM	WARN	API Rate Limiting
+100002	MEDIUM	WARN	API Error Information Disclosure

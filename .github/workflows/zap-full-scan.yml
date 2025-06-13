@@ -23,25 +23,23 @@ jobs:
         node-version: '18'
         cache: 'npm'
 
-    - name: Install dependencies
-      run: |
-        npm install
-        cd backend && npm install
-        cd ../frontend && npm install
+    - name: Install frontend dependencies
+      working-directory: ./frontend
+      run: npm install
 
-    - name: Build applications
-      run: |
-        npm run build
+    - name: Build frontend application
+      working-directory: ./frontend
+      run: npm run build
 
-    - name: Deploy to Vercel Production
+    - name: Deploy Frontend to Vercel Production
       uses: amondnet/vercel-action@v25
       id: vercel-deploy
       with:
         vercel-token: ${{ secrets.VERCEL_TOKEN }}
         vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
-        vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+        vercel-project-id: ${{ secrets.VERCEL_FRONTEND_PROJECT_ID }}
         vercel-args: '--prod'
-        working-directory: ./
+        working-directory: ./frontend
 
     - name: Wait for deployment
       run: sleep 60

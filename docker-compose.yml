@@ -1,21 +1,37 @@
 version: '3.8'
 
 services:
-  # Default service using LibSQL database
-  vulnerable-app:
+  # Frontend service
+  frontend:
     build:
-      context: .
-      dockerfile: Dockerfile.alternative
+      context: ./frontend
+      dockerfile: ../Dockerfile.simple
     ports:
       - "3000:3000"
     environment:
-      - NODE_ENV=production
+      - NODE_ENV=development
       - PORT=3000
+      - NEXT_PUBLIC_BACKEND_URL=http://backend:3001
+    depends_on:
+      - backend
+    networks:
+      - zap-network
+
+  # Backend service with LibSQL database
+  backend:
+    build:
+      context: ./backend
+      dockerfile: ../Dockerfile.alternative
+    ports:
+      - "3001:3001"
+    environment:
+      - NODE_ENV=development
+      - PORT=3001
       - LIBSQL_URL=file:local.db
     volumes:
       - ./data:/app/data
     healthcheck:
-      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3000"]
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3001"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -23,8 +39,8 @@ services:
     networks:
       - zap-network
 
-  # Alternative with simple in-memory database (for testing)
-  vulnerable-app-simple:
+  # Alternative backend with simple in-memory database
+  backend-simple:
     build:
       context: .
       dockerfile: Dockerfile.simple
@@ -60,7 +76,9 @@ services:
     networks:
       - zap-network
     depends_on:
-      vulnerable-app:
+      frontend:
+        condition: service_started
+      backend:
         condition: service_healthy
 
 networks:
