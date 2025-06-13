@@ -1,29 +1,40 @@
 {
   "version": 2,
-  
   "builds": [
     {
       "src": "frontend/package.json",
-      "use": "@vercel/next"
+      "use": "@vercel/next",
+      "config": {
+        "buildCommand": "npm install && npm run build"
+      }
     },
     {
-      "src": "backend/package.json",
-      "use": "@vercel/node"
+      "src": "backend/vercel.ts",
+      "use": "@vercel/node",
+      "config": {
+        "includeFiles": ["backend/src/**", "backend/dist/**", "backend/package.json", "backend/tsconfig.json"],
+        "buildCommand": "cd backend && node build.js"
+      }
     }
   ],
   "routes": [
     {
       "src": "/api/(.*)",
-      "dest": "/backend/src/main.js"
+      "dest": "/backend/vercel.ts"
     },
     {
       "src": "/(.*)",
       "dest": "/frontend/$1"
     }
   ],
+  "functions": {
+    "backend/vercel.ts": {
+      "runtime": "@vercel/node@20.x",
+      "maxDuration": 30
+    }
+  },
   "env": {
     "NODE_ENV": "production",
     "NODE_VERSION": "20"
-    
   }
 }
